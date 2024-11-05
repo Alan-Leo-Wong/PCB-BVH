@@ -15,6 +15,7 @@ struct BBox {
     BBox() = default;
     BVH_ALWAYS_INLINE BBox(const Vec<T, N>& min, const Vec<T, N>& max) : min(min), max(max) {}
     BVH_ALWAYS_INLINE explicit BBox(const Vec<T, N>& point) : BBox(point, point) {}
+    BVH_ALWAYS_INLINE BBox(const BBox<T, N>& other) : min(other.min), max(other.max) {}
 
     BVH_ALWAYS_INLINE BBox& extend(const Vec<T, N>& point) {
         return extend(BBox(point));
@@ -41,6 +42,14 @@ struct BBox {
         return BBox(
             Vec<T, N>(+std::numeric_limits<T>::max()),
             Vec<T, N>(-std::numeric_limits<T>::max()));
+    }
+
+    BVH_ALWAYS_INLINE BBox<T, N>& operator=(const BBox<T, N>& other) {
+        if (this != &other) {
+            min = other.min;
+            max = other.max;
+        }
+        return *this;
     }
 };
 

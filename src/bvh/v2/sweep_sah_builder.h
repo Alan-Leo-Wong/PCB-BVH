@@ -9,6 +9,7 @@
 #include <optional>
 #include <numeric>
 #include <cassert>
+#include <iostream>
 
 namespace bvh::v2 {
 

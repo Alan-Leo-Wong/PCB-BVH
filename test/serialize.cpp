@@ -10,7 +10,7 @@
 #include <iostream>
 
 using Scalar  = float;
-using Vec3    = bvh::v2::Vec<Scalar, 3>;
+using Vec2    = bvh::v2::Vec<Scalar, 3>;
 using BBox    = bvh::v2::BBox<Scalar, 3>;
 using Tri     = bvh::v2::Tri<Scalar, 3>;
 using Node    = bvh::v2::Node<Scalar, 3>;
@@ -41,18 +41,18 @@ static std::optional<Bvh> load_bvh(const std::string& file_name) {
 int main() {
     std::vector<Tri> tris;
     tris.emplace_back(
-        Vec3( 1.0, -1.0, 1.0),
-        Vec3( 1.0,  1.0, 1.0),
-        Vec3(-1.0,  1.0, 1.0)
+            Vec2(1.0, -1.0, 1.0),
+            Vec2(1.0, 1.0, 1.0),
+            Vec2(-1.0, 1.0, 1.0)
     );
     tris.emplace_back(
-        Vec3( 1.0, -1.0, 1.0),
-        Vec3(-1.0, -1.0, 1.0),
-        Vec3(-1.0,  1.0, 1.0)
+            Vec2(1.0, -1.0, 1.0),
+            Vec2(-1.0, -1.0, 1.0),
+            Vec2(-1.0, 1.0, 1.0)
     );
 
     std::vector<BBox> bboxes(tris.size());
-    std::vector<Vec3> centers(tris.size());
+    std::vector<Vec2> centers(tris.size());
     for (size_t i = 0; i < tris.size(); ++i) {
         bboxes[i]  = tris[i].get_bbox();
         centers[i] = tris[i].get_center();

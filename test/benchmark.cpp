@@ -20,7 +20,7 @@
 #include <string_view>
 
 using Scalar  = float;
-using Vec3    = bvh::v2::Vec<Scalar, 3>;
+using Vec2    = bvh::v2::Vec<Scalar, 3>;
 using BBox    = bvh::v2::BBox<Scalar, 3>;
 using Tri     = bvh::v2::Tri<Scalar, 3>;
 using Node    = bvh::v2::Node<Scalar, 3>;
@@ -29,7 +29,7 @@ using Ray     = bvh::v2::Ray<Scalar, 3>;
 
 template struct bvh::v2::Sphere<Scalar, 3>;
 
-using PrecomputedTri = bvh::v2::PrecomputedTri<Scalar>;
+using PrecomputedTri = bvh::v2::PrecomputedTri<Scalar, 3>;
 
 static constexpr size_t stack_size = 64;
 
@@ -83,9 +83,9 @@ struct Options {
     using Quality = bvh::v2::DefaultBuilder<Node>::Quality;
 
     bool show_usage = false;
-    Vec3 eye = Vec3(0);
-    Vec3 dir = Vec3(0, 0, 1);
-    Vec3 up = Vec3(0, 1, 0);
+    Vec2 eye = Vec2(0);
+    Vec2 dir = Vec2(0, 0, 1);
+    Vec2 up = Vec2(0, 1, 0);
     size_t width = 1024;
     size_t height = 1024;
     size_t build_iters = 1;
@@ -203,7 +203,7 @@ static Accel build_accel(bvh::v2::ThreadPool& thread_pool, const std::vector<Tri
     bvh::v2::ParallelExecutor executor(thread_pool);
 
     std::vector<BBox> bboxes(tris.size());
-    std::vector<Vec3> centers(tris.size());
+    std::vector<Vec2> centers(tris.size());
     executor.for_each(0, tris.size(), [&] (size_t begin, size_t end) {
         for (size_t i = begin; i < end; ++i) {
             bboxes[i]  = tris[i].get_bbox();
@@ -314,12 +314,12 @@ static IntersectAccelFn get_intersect_accel_fn(const Options& options) {
 }
 
 std::tuple<uint8_t, uint8_t, uint8_t> intensity_to_color(Scalar k) {
-    static const Vec3 g[] = {
-        Vec3(0, 0, 255),
-        Vec3(0, 255, 255),
-        Vec3(0, 128, 0),
-        Vec3(255, 255, 0),
-        Vec3(255, 0, 0)
+    static const Vec2 g[] = {
+            Vec2(0, 0, 255),
+            Vec2(0, 255, 255),
+            Vec2(0, 128, 0),
+            Vec2(255, 255, 0),
+            Vec2(255, 0, 0)
     };
     static constexpr size_t n = sizeof(g) / sizeof(g[0]);
     static constexpr auto s = Scalar{1} / static_cast<Scalar>(n);

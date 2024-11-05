@@ -3,17 +3,22 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU
 endif()
 
 add_executable(simple_example simple_example.cpp)
-target_link_libraries(simple_example PUBLIC bvh)
+target_link_libraries(simple_example PUBLIC PCB-BVH)
 set_target_properties(simple_example PROPERTIES CXX_STANDARD 20)
 add_test(NAME simple_example COMMAND simple_example)
 
+add_executable(pcb_test pcb_test.cpp)
+target_link_libraries(pcb_test PUBLIC PCB-BVH)
+set_target_properties(pcb_test PROPERTIES CXX_STANDARD 20)
+add_test(NAME pcb_test COMMAND pcb_test)
+
 add_executable(serialize serialize.cpp)
-target_link_libraries(serialize PUBLIC bvh)
+target_link_libraries(serialize PUBLIC PCB-BVH)
 set_target_properties(serialize PROPERTIES CXX_STANDARD 20)
 add_test(NAME serialize COMMAND serialize)
 
 add_executable(benchmark benchmark.cpp load_obj.cpp)
-target_link_libraries(benchmark PUBLIC bvh)
+target_link_libraries(benchmark PUBLIC PCB-BVH)
 set_target_properties(benchmark PROPERTIES CXX_STANDARD 20)
 add_test(
     NAME benchmark
