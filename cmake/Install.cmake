@@ -19,7 +19,11 @@ install(
 include(CMakePackageConfigHelpers)
 
 configure_package_config_file(
+<<<<<<< HEAD
     "${PROJECT_SOURCE_DIR}/PCB-BVH/cmake/bvh-config.cmake.in"
+=======
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/bvh-config.cmake.in"
+>>>>>>> 37395134cc29b5f68084bf299c21ce8ea5e8d96e
     "${CMAKE_CURRENT_BINARY_DIR}/bvh-config.cmake"
     INSTALL_DESTINATION lib/cmake/bvh/v2/)
 
