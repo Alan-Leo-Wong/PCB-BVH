@@ -1,4 +1,4 @@
-set(bvh_targets bvh)
+set(bvh_targets PCB-BVH)
 if (BVH_BUILD_C_API)
     list(APPEND bvh_targets bvh_c)
 endif()
@@ -19,7 +19,7 @@ install(
 include(CMakePackageConfigHelpers)
 
 configure_package_config_file(
-    "${PROJECT_SOURCE_DIR}/cmake/bvh-config.cmake.in"
+    "${PROJECT_SOURCE_DIR}/PCB-BVH/cmake/bvh-config.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/bvh-config.cmake"
     INSTALL_DESTINATION lib/cmake/bvh/v2/)
 
