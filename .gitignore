@@ -3,3 +3,4 @@ build/
 install/
 cmake-build-debug/
 cmake-build-release/
+.idea/
