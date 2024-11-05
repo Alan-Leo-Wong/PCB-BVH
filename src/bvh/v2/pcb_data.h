@@ -150,7 +150,7 @@ namespace bvh::v2 {
 
         ArcData(const Vec<T, N> &_center, T _radius, T _theta_0, T _theta_1) : center(_center), radius(_radius),
                                                                                theta_0(_theta_0),
-                                                                               theta_1(_theta_1) {
+                                                                                theta_1(_theta_1) {
             delta_theta = theta_1 - theta_0;
         }
     };
@@ -268,9 +268,9 @@ namespace bvh::v2 {
             T bbox_x_min_theta[4], bbox_x_max_theta[4];
             if (bbox_x_min_delta >= -R && bbox_x_min_delta <= R) {
                 bbox_x_min_theta[0] = std::acos(bbox_x_min_delta / R); // [0, pi]
-                bbox_x_min_theta[1] = -std::acos(bbox_x_min_delta / R); // [-pi, 0]
-                bbox_x_min_theta[2] = 2 * M_PI - std::acos(bbox_x_min_delta / R); // [pi, 2 * pi]
-                bbox_x_min_theta[3] = 2 * M_PI + std::acos(bbox_x_min_delta / R); // [2 * pi, 3 * pi]
+                bbox_x_min_theta[1] = -bbox_x_min_theta[0]; // [-pi, 0]
+                bbox_x_min_theta[2] = 2 * M_PI - bbox_x_min_theta[0]; // [pi, 2 * pi]
+                bbox_x_min_theta[3] = 2 * M_PI + bbox_x_min_theta[0]; // [2 * pi, 3 * pi]
             } else {
                 bbox_x_min_theta[0] = 0;
                 bbox_x_min_theta[1] = -M_PI;
@@ -278,7 +278,10 @@ namespace bvh::v2 {
                 bbox_x_min_theta[3] = 2 * M_PI;
             }
             if (bbox_x_max_delta >= -R && bbox_x_max_delta <= R) {
-                bbox_x_max_theta = std::acos(bbox_x_max_delta / R);
+                bbox_x_max_theta[0] = std::acos(bbox_x_max_delta / R); // [0, pi]
+                bbox_x_max_theta[1] = -bbox_x_max_theta[0]; // [-pi, 0]
+                bbox_x_max_theta[2] = 2 * M_PI - bbox_x_max_theta[0]; // [pi, 2 * pi]
+                bbox_x_max_theta[3] = 2 * M_PI + bbox_x_max_theta[0]; // [2 * pi, 3 * pi]
             } else {
                 bbox_x_max_theta[0] = M_PI;
                 bbox_x_max_theta[1] = 0;
