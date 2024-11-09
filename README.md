@@ -1,3 +1,20 @@
+# Enhanced BVH Construction for PCB Data
+
+This repository is a fork of [madmann91/bvh: A modern C++ BVH construction and traversal library](https://github.com/madmann91/bvh), where I have extended its functionality to specifically address the challenges associated with **PCB (Printed Circuit Board) data.** My enhancements focus on efficient BVH (Bounding Volume Hierarchy) construction for complex PCB designs, incorporating both 2D line segments and arcs.
+
+## Background
+
+The original project provided a robust framework for BVH construction, which was primarily designed for simpler geometric shapes. Recognizing the need for specialized handling of PCB data, this fork introduces tailored algorithms that better accommodate the intricacies of PCB designs, such as varying widths and curved traces.
+
+## Features
+
+- **2D BVH Construction:** Tailored to efficiently encompass the flat nature of PCB designs, supporting accurate spatial indexing.
+- **Handling Line Segments and Arcs:** Specific optimizations for including line segments and arcs in the BVH, ensuring comprehensive coverage of all PCB elements.
+- **Collision Detection:** Advanced collision detection algorithms that quickly identify potential overlaps between PCB components, crucial for design validation and testing.
+- **Closest Point Query:** Efficient nearest point calculation to aid in routing and placement decisions by finding the closest points on the PCB quickly and accurately.
+
+------
+
 # BVH Construction and Traversal Library
 
 ![Build Status](https://github.com/madmann91/bvh/workflows/build-and-test/badge.svg)
