@@ -115,19 +115,16 @@ namespace bvh::v2 {
         }
 
         BVH_ALWAYS_INLINE bool is_intersect(const BBox<T, N> &bbox) const override {
-            /*std::cout << "before:\np1 = (" << this->p0[0] << ", " << this->p0[1] <<
-            ")" << std::endl; std::cout << "p2 = (" << this->p1[0] << ", " <<
-            this->p1[1] << ")" << std::endl;*/
+            /*std::cout << "p1 = (" << this->p0[0] << ", " << this->p0[1] <<
+                      ")" << std::endl;
+            std::cout << "p2 = (" << this->p1[0] << ", " <<
+                      this->p1[1] << ")" << std::endl;*/
 
             T min_t = 0.0, max_t = 1.0;
             Point _p0 = this->p0;
             Point _p1 = this->p1;
             /*std::cout << "seg_x_delta: " << _p1[0] - _p0[0] << std::endl;
             std::cout << "seg_y_delta: " << _p1[1] - _p0[1] << std::endl;*/
-
-            /*std::cout << "============\nafter:\np1 = (" << _p0[0] << ", " << _p0[1] <<
-            ")" << std::endl; std::cout << "p2 = (" << _p1[0] << ", " << _p1[1] << ")"
-            << std::endl;*/
 
             if (bbox.min[0] == bbox.max[0]) {
                 if (_p1[0] < bbox.min[0] || _p0[0] > bbox.max[0])
@@ -139,7 +136,7 @@ namespace bvh::v2 {
                 std::cout << "bbox_x_max_delta: " << bbox_x_max_delta << std::endl;*/
 
                 T p_x_delta = _p1[0] - _p0[0];
-                // std::cout << "p_x_delta: " << p_x_delta << std::endl;
+//                 std::cout << "p_x_delta: " << p_x_delta << std::endl;
                 if (p_x_delta != .0) {
                     min_t = bbox_x_min_delta / p_x_delta;
                     max_t = bbox_x_max_delta / p_x_delta;
@@ -147,14 +144,16 @@ namespace bvh::v2 {
                         std::swap(min_t, max_t);
                     /*std::cout << "min_t: " << min_t << std::endl;
                     std::cout << "max_t: " << max_t << std::endl;*/
-                    if (min_t > 1.0 || max_t < 0.0)
-                        return false;
+                    if (min_t > 1.0 || max_t < 0.0) return false;
                 }
             }
 
             {
                 T bbox_y_min_delta = (bbox.min[1] - _p0[1]);
                 T bbox_y_max_delta = (bbox.max[1] - _p0[1]);
+
+                /*std::cout << "bbox_y_min_delta: " << bbox_y_min_delta << std::endl;
+                std::cout << "bbox_y_max_delta: " << bbox_y_max_delta << std::endl;*/
 
                 T p_y_delta = _p1[1] - _p0[1];
                 if (p_y_delta >= 0) {
@@ -299,24 +298,18 @@ namespace bvh::v2 {
             T valid_min_theta = std::max(bbox_x_min_theta, arc_data.theta_0);
             T valid_max_theta = std::min(bbox_x_max_theta, arc_data.theta_1);
             /*std::cout << "==========\nvalid_x_min_theta = " << valid_min_theta / M_PI
-            * 180.0 << std::endl; std::cout << "valid_x_max_theta = " << valid_max_theta
-            / M_PI * 180.0 << std::endl;*/
-            if (valid_min_theta > bbox_x_max_theta)
-                return false; // 没有任何区间重叠
-            if (valid_max_theta < bbox_x_min_theta)
-                return false; // 没有任何区间重叠
+                                                               * 180.0 << std::endl;
+            std::cout << "valid_x_max_theta = " << valid_max_theta
+                                                   / M_PI * 180.0 << std::endl;*/
+            if (valid_min_theta > bbox_x_max_theta || valid_max_theta < bbox_x_min_theta) return false; // 没有任何区间重叠
 
             T valid_y_min_delta, valid_y_max_delta;
-            valid_y_min_delta =
-                    std::min(std::sin(valid_min_theta), std::sin(valid_max_theta));
-            valid_y_max_delta =
-                    std::max(std::sin(valid_min_theta), std::sin(valid_max_theta));
+            valid_y_min_delta = std::min(std::sin(valid_min_theta), std::sin(valid_max_theta));
+            valid_y_max_delta = std::max(std::sin(valid_min_theta), std::sin(valid_max_theta));
             for (int i = 0; i < 11; ++i) {
                 T angle = sp_angles[i];
-                if (angle <= valid_min_theta)
-                    continue;
-                if (angle >= valid_max_theta)
-                    break;
+                if (angle <= valid_min_theta) continue;
+                if (angle >= valid_max_theta) break;
 
                 valid_y_min_delta = std::min(valid_y_min_delta, sin_sp_angles[i]);
                 valid_y_max_delta = std::max(valid_y_max_delta, sin_sp_angles[i]);
@@ -335,17 +328,22 @@ namespace bvh::v2 {
             T bbox_y_min_delta = (bbox.min[1] - arc_data.center[1]);
             T bbox_y_max_delta = (bbox.max[1] - arc_data.center[1]);
             /*std::cout << "center: " << arc_data.center[0] << ", " <<
-            arc_data.center[1] << std::endl;
+                      arc_data.center[1] << std::endl;
 
             std::cout << "p1 = (" << this->p0[0] << ", " << this->p0[1] << ")" <<
-            std::endl; std::cout << "p2 = (" << this->p1[0] << ", " << this->p1[1] <<
-            ")" << std::endl; std::cout << "bbox_x_min_delta = " << bbox_x_min_delta <<
-            std::endl; std::cout << "bbox_x_max_delta = " << bbox_x_max_delta <<
-            std::endl;
+                      std::endl;
+            std::cout << "p2 = (" << this->p1[0] << ", " << this->p1[1] <<
+                      ")" << std::endl;
+            std::cout << "bbox_x_min_delta = " << bbox_x_min_delta <<
+                      std::endl;
+            std::cout << "bbox_x_max_delta = " << bbox_x_max_delta <<
+                      std::endl;
 
             std::cout << "arc_data.theta_0 = " << arc_data.theta_0 / M_PI * 180.0 <<
-            std::endl; std::cout << "arc_data.theta_1 = " << arc_data.theta_1 / M_PI *
-            180.0 << std::endl; std::cout << "R = " << arc_data.radius << std::endl;*/
+                      std::endl;
+            std::cout << "arc_data.theta_1 = " << arc_data.theta_1 / M_PI *
+                                                  180.0 << std::endl;
+            std::cout << "R = " << arc_data.radius << std::endl;*/
 
             T R = arc_data.radius;
             if (bbox_x_min_delta > R || bbox_y_min_delta > R || bbox_x_max_delta < -R ||
@@ -359,10 +357,10 @@ namespace bvh::v2 {
                 bbox_x_min_theta[2] = 2 * M_PI - bbox_x_min_theta[0];  // [pi, 2 * pi]
                 bbox_x_min_theta[3] = 2 * M_PI + bbox_x_min_theta[0];  // [2 * pi, 3 * pi]
             } else {
-                bbox_x_min_theta[0] = 0;
-                bbox_x_min_theta[1] = -M_PI;
-                bbox_x_min_theta[2] = M_PI;
-                bbox_x_min_theta[3] = 2 * M_PI;
+                bbox_x_min_theta[0] = std::min(arc_data.theta_0, .0);
+                bbox_x_min_theta[1] = std::min(arc_data.theta_0, -M_PI);
+                bbox_x_min_theta[2] = std::min(arc_data.theta_0, M_PI);
+                bbox_x_min_theta[3] = std::min(arc_data.theta_0, 2 * M_PI);
             }
             if (bbox_x_max_delta >= -R && bbox_x_max_delta <= R) {
                 bbox_x_max_theta[0] = std::acos(bbox_x_max_delta / R); // [0, pi]
@@ -370,18 +368,20 @@ namespace bvh::v2 {
                 bbox_x_max_theta[2] = 2 * M_PI - bbox_x_max_theta[0];  // [pi, 2 * pi]
                 bbox_x_max_theta[3] = 2 * M_PI + bbox_x_max_theta[0];  // [2 * pi, 3 * pi]
             } else {
-                bbox_x_max_theta[0] = M_PI;
-                bbox_x_max_theta[1] = 0;
-                bbox_x_max_theta[2] = 2 * M_PI;
-                bbox_x_max_theta[3] = 3 * M_PI;
+                bbox_x_max_theta[0] = std::max(arc_data.theta_1, M_PI);
+                bbox_x_max_theta[1] = std::max(arc_data.theta_1, .0);
+                bbox_x_max_theta[2] = std::max(arc_data.theta_1, 2 * M_PI);
+                bbox_x_max_theta[3] = std::max(arc_data.theta_1, 3 * M_PI);
             }
 
             for (int i = 0; i < 4; ++i) {
                 if (bbox_x_min_theta[i] > bbox_x_max_theta[i])
                     std::swap(bbox_x_min_theta[i], bbox_x_max_theta[i]);
                 /*std::cout << "==========\nbbox_x_min_theta = " << bbox_x_min_theta[i] /
-                M_PI * 180.0 << std::endl; std::cout << "bbox_x_max_theta = " <<
-                bbox_x_max_theta[i] / M_PI * 180.0 << std::endl; system("pause");*/
+                                                                  M_PI * 180.0 << std::endl;
+                std::cout << "bbox_x_max_theta = " <<
+                          bbox_x_max_theta[i] / M_PI * 180.0 << std::endl;
+                system("pause");*/
 
                 if (check_cover(bbox_x_min_theta[i], bbox_x_max_theta[i],
                                 bbox_y_min_delta, bbox_y_max_delta))
