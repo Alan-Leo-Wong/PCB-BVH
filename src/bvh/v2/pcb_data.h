@@ -13,6 +13,7 @@
 #include <optional>
 #include <utility>
 #include <vector>
+#include <assert.h>
 
 
 namespace bvh::v2 {
@@ -295,8 +296,8 @@ namespace bvh::v2 {
                                            double bbox_x_max_theta,
                                            double bbox_y_min_delta,
                                            double bbox_y_max_delta) const {
-            T valid_min_theta = std::max(bbox_x_min_theta, arc_data.theta_0);
-            T valid_max_theta = std::min(bbox_x_max_theta, arc_data.theta_1);
+            T valid_min_theta = std::max(bbox_x_min_theta, (double)arc_data.theta_0);
+            T valid_max_theta = std::min(bbox_x_max_theta, (double)arc_data.theta_1);
             /*std::cout << "==========\nvalid_x_min_theta = " << valid_min_theta / M_PI
                                                                * 180.0 << std::endl;
             std::cout << "valid_x_max_theta = " << valid_max_theta
@@ -321,73 +322,152 @@ namespace bvh::v2 {
             return true;
         }
 
-        BVH_ALWAYS_INLINE bool is_intersect(const BBox<T, N> &bbox) const override {
+//           BVH_ALWAYS_INLINE bool is_intersect(const BBox<T, N> &bbox) const override {
+//               T bbox_x_min_delta = (bbox.min[0] - arc_data.center[0]);
+//               T bbox_x_max_delta = (bbox.max[0] - arc_data.center[0]);
+//
+//               T bbox_y_min_delta = (bbox.min[1] - arc_data.center[1]);
+//               T bbox_y_max_delta = (bbox.max[1] - arc_data.center[1]);
+//               /*std::cout << "center: " << arc_data.center[0] << ", " <<
+//                         arc_data.center[1] << std::endl;
+//
+//               std::cout << "p1 = (" << this->p0[0] << ", " << this->p0[1] << ")" <<
+//                         std::endl;
+//               std::cout << "p2 = (" << this->p1[0] << ", " << this->p1[1] <<
+//                         ")" << std::endl;
+//               std::cout << "bbox_x_min_delta = " << bbox_x_min_delta <<
+//                         std::endl;
+//               std::cout << "bbox_x_max_delta = " << bbox_x_max_delta <<
+//                         std::endl;
+//
+//               std::cout << "arc_data.theta_0 = " << arc_data.theta_0 / M_PI * 180.0 <<
+//                         std::endl;
+//               std::cout << "arc_data.theta_1 = " << arc_data.theta_1 / M_PI *
+//                                                     180.0 << std::endl;
+//               std::cout << "R = " << arc_data.radius << std::endl;*/
+//
+//               T R = arc_data.radius;
+//               if (bbox_x_min_delta > R || bbox_y_min_delta > R || bbox_x_max_delta < -R ||
+//                   bbox_y_max_delta < -R)
+//                   return false;
+//
+//               T bbox_x_min_theta[4], bbox_x_max_theta[4];
+//               if (bbox_x_min_delta >= -R && bbox_x_min_delta <= R) {
+//                   bbox_x_min_theta[0] = std::acos(bbox_x_min_delta / R); // [0, pi]
+//                   bbox_x_min_theta[1] = -bbox_x_min_theta[0];            // [-pi, 0]
+//                   bbox_x_min_theta[2] = 2 * M_PI - bbox_x_min_theta[0];  // [pi, 2 * pi]
+//                   bbox_x_min_theta[3] = 2 * M_PI + bbox_x_min_theta[0];  // [2 * pi, 3 * pi]
+//               } else {
+//                   bbox_x_min_theta[0] = std::min((double)arc_data.theta_0, .0);
+//                   bbox_x_min_theta[1] = std::min((double)arc_data.theta_0, -M_PI);
+//                   bbox_x_min_theta[2] = std::min((double)arc_data.theta_0, M_PI);
+//                   bbox_x_min_theta[3] = std::min((double)arc_data.theta_0, 2 * M_PI);
+//               }
+//               if (bbox_x_max_delta >= -R && bbox_x_max_delta <= R) {
+//                   bbox_x_max_theta[0] = std::acos(bbox_x_max_delta / R); // [0, pi]
+//                   bbox_x_max_theta[1] = -bbox_x_max_theta[0];            // [-pi, 0]
+//                   bbox_x_max_theta[2] = 2 * M_PI - bbox_x_max_theta[0];  // [pi, 2 * pi]
+//                   bbox_x_max_theta[3] = 2 * M_PI + bbox_x_max_theta[0];  // [2 * pi, 3 * pi]
+//               } else {
+//                   bbox_x_max_theta[0] = std::max((double)arc_data.theta_1, M_PI);
+//                   bbox_x_max_theta[1] = std::max((double)arc_data.theta_1, .0);
+//                   bbox_x_max_theta[2] = std::max((double)arc_data.theta_1, 2 * M_PI);
+//                   bbox_x_max_theta[3] = std::max((double)arc_data.theta_1, 3 * M_PI);
+//               }
+//
+//               for (int i = 0; i < 4; ++i) {
+//                   if (bbox_x_min_theta[i] > bbox_x_max_theta[i])
+//                       std::swap(bbox_x_min_theta[i], bbox_x_max_theta[i]);
+//                   /*std::cout << "==========\nbbox_x_min_theta = " << bbox_x_min_theta[i] /
+//                                                                     M_PI * 180.0 << std::endl;
+//                   std::cout << "bbox_x_max_theta = " <<
+//                             bbox_x_max_theta[i] / M_PI * 180.0 << std::endl;
+//                   system("pause");*/
+//
+//                   if (check_cover(bbox_x_min_theta[i], bbox_x_max_theta[i],
+//                                   bbox_y_min_delta, bbox_y_max_delta))
+//                       return true;
+//               }
+//
+//               return false;
+//           }
+        BVH_ALWAYS_INLINE bool is_onArc(T theta) const {
+            if((theta >= arc_data.theta_0 && theta <= arc_data.theta_1) ||
+                (theta - 2 * M_PI >= arc_data.theta_0 && theta - 2 * M_PI <= arc_data.theta_1) ||
+                (theta + 2 * M_PI >= arc_data.theta_0 && theta + 2 * M_PI <= arc_data.theta_1)
+                )
+                return true;
+            return false;
+        }
+
+        BVH_ALWAYS_INLINE bool is_intersect(const BBox<T, N> &bbox) const override{
             T bbox_x_min_delta = (bbox.min[0] - arc_data.center[0]);
             T bbox_x_max_delta = (bbox.max[0] - arc_data.center[0]);
-
             T bbox_y_min_delta = (bbox.min[1] - arc_data.center[1]);
             T bbox_y_max_delta = (bbox.max[1] - arc_data.center[1]);
-            /*std::cout << "center: " << arc_data.center[0] << ", " <<
-                      arc_data.center[1] << std::endl;
-
-            std::cout << "p1 = (" << this->p0[0] << ", " << this->p0[1] << ")" <<
-                      std::endl;
-            std::cout << "p2 = (" << this->p1[0] << ", " << this->p1[1] <<
-                      ")" << std::endl;
-            std::cout << "bbox_x_min_delta = " << bbox_x_min_delta <<
-                      std::endl;
-            std::cout << "bbox_x_max_delta = " << bbox_x_max_delta <<
-                      std::endl;
-
-            std::cout << "arc_data.theta_0 = " << arc_data.theta_0 / M_PI * 180.0 <<
-                      std::endl;
-            std::cout << "arc_data.theta_1 = " << arc_data.theta_1 / M_PI *
-                                                  180.0 << std::endl;
-            std::cout << "R = " << arc_data.radius << std::endl;*/
-
             T R = arc_data.radius;
+            // 若和圆包围盒无交集则直接return
             if (bbox_x_min_delta > R || bbox_y_min_delta > R || bbox_x_max_delta < -R ||
                 bbox_y_max_delta < -R)
                 return false;
 
-            T bbox_x_min_theta[4], bbox_x_max_theta[4];
-            if (bbox_x_min_delta >= -R && bbox_x_min_delta <= R) {
-                bbox_x_min_theta[0] = std::acos(bbox_x_min_delta / R); // [0, pi]
-                bbox_x_min_theta[1] = -bbox_x_min_theta[0];            // [-pi, 0]
-                bbox_x_min_theta[2] = 2 * M_PI - bbox_x_min_theta[0];  // [pi, 2 * pi]
-                bbox_x_min_theta[3] = 2 * M_PI + bbox_x_min_theta[0];  // [2 * pi, 3 * pi]
-            } else {
-                bbox_x_min_theta[0] = std::min(arc_data.theta_0, .0);
-                bbox_x_min_theta[1] = std::min(arc_data.theta_0, -M_PI);
-                bbox_x_min_theta[2] = std::min(arc_data.theta_0, M_PI);
-                bbox_x_min_theta[3] = std::min(arc_data.theta_0, 2 * M_PI);
+            // 思路：先求bbox四条边所在直线与整个圆的交点(每条线2个，最多共8个)，存入thetas，再判断交点是否在包围盒及圆弧上
+            //std::vector<T> thetas;
+            T thetas[8];  // 比vector快
+            int top = 0;  // thetas.size();
+            T temp_theta;  // 避免多次调用acos降低速度
+            T temp_coord;  // 避免多次调用sin/cos降低速度，若求的是直线x=C与圆交点，则该变量表示交点的y坐标，以判断交点是否在bbox上
+            //if (bbox_x_min_delta >= -R && bbox_x_min_delta <= R) {
+            if (bbox_x_min_delta >= -R) {  // bbox的左侧边是否在圆包围盒以内
+                temp_theta = std::acos(bbox_x_min_delta / R);
+                temp_coord = arc_data.center[1] + arc_data.radius * std::sin(temp_theta);
+                // 第一个交点，若该交点在bbox左侧边所在线段(而非延长线)上，则存入thetas
+                if(bbox.min[1] <= temp_coord && temp_coord <= bbox.max[1]) {
+                    thetas[top] = temp_theta; top++;
+                }
+                // 上一个交点在圆上关于x轴的对称点的y坐标
+                if(bbox.min[1] <= -temp_coord + 2 * arc_data.center[1] && -temp_coord + 2 * arc_data.center[1] <= bbox.max[1]) {
+                    thetas[top] = -temp_theta; top++;
+                }
             }
-            if (bbox_x_max_delta >= -R && bbox_x_max_delta <= R) {
-                bbox_x_max_theta[0] = std::acos(bbox_x_max_delta / R); // [0, pi]
-                bbox_x_max_theta[1] = -bbox_x_max_theta[0];            // [-pi, 0]
-                bbox_x_max_theta[2] = 2 * M_PI - bbox_x_max_theta[0];  // [pi, 2 * pi]
-                bbox_x_max_theta[3] = 2 * M_PI + bbox_x_max_theta[0];  // [2 * pi, 3 * pi]
-            } else {
-                bbox_x_max_theta[0] = std::max(arc_data.theta_1, M_PI);
-                bbox_x_max_theta[1] = std::max(arc_data.theta_1, .0);
-                bbox_x_max_theta[2] = std::max(arc_data.theta_1, 2 * M_PI);
-                bbox_x_max_theta[3] = std::max(arc_data.theta_1, 3 * M_PI);
+            //if (bbox_x_max_delta >= -R && bbox_x_max_delta <= R) {
+            if (bbox_x_max_delta <= R) {  // bbox的右侧边
+                temp_theta = std::acos(bbox_x_max_delta / R);
+                temp_coord = arc_data.center[1] + arc_data.radius * std::sin(temp_theta);
+                if(bbox.min[1] <= temp_coord && temp_coord <= bbox.max[1]){
+                    thetas[top] = temp_theta; top++;
+                }
+                if(bbox.min[1] <= -temp_coord + 2 * arc_data.center[1] && -temp_coord + 2 * arc_data.center[1] <= bbox.max[1]){
+                    thetas[top] = -temp_theta; top++;
+                }
+            }
+            //if (bbox_y_min_delta >= -R && bbox_y_min_delta <= R) {
+            if (bbox_y_min_delta >= -R) {  // bbox的下侧边
+                temp_theta = M_PI / 2.0 + std::acos(bbox_y_min_delta / R);
+                temp_coord = arc_data.center[0] + arc_data.radius * std::cos(temp_theta);
+                if(bbox.min[0] <= temp_coord && temp_coord <= bbox.max[0]){
+                    thetas[top] = temp_theta; top++;
+                }
+                if(bbox.min[0] <= -temp_coord + 2 * arc_data.center[0] && -temp_coord + 2 * arc_data.center[0] <= bbox.max[0]){
+                    thetas[top] = M_PI-temp_theta; top++;
+                }
+            }
+            //if (bbox_y_max_delta >= -R && bbox_y_max_delta <= R) {
+            if (bbox_y_max_delta <= R) {  // bbox的上侧边
+                temp_theta = M_PI / 2.0 + std::acos(bbox_y_max_delta / R);
+                temp_coord = arc_data.center[0] + arc_data.radius * std::cos(temp_theta);
+                if(bbox.min[0] <= temp_coord && temp_coord <= bbox.max[0]){
+                    thetas[top] = temp_theta; top++;
+                }
+                if(bbox.min[0] <= -temp_coord + 2 * arc_data.center[0] && -temp_coord + 2 * arc_data.center[0] <= bbox.max[0]){
+                    thetas[top] = M_PI-temp_theta; top++;
+                }
             }
 
-            for (int i = 0; i < 4; ++i) {
-                if (bbox_x_min_theta[i] > bbox_x_max_theta[i])
-                    std::swap(bbox_x_min_theta[i], bbox_x_max_theta[i]);
-                /*std::cout << "==========\nbbox_x_min_theta = " << bbox_x_min_theta[i] /
-                                                                  M_PI * 180.0 << std::endl;
-                std::cout << "bbox_x_max_theta = " <<
-                          bbox_x_max_theta[i] / M_PI * 180.0 << std::endl;
-                system("pause");*/
-
-                if (check_cover(bbox_x_min_theta[i], bbox_x_max_theta[i],
-                                bbox_y_min_delta, bbox_y_max_delta))
+            // 对查询到的可能交点进行检测
+            for(int i = 0; i < top; i++)
+                if(is_onArc(thetas[i]))
                     return true;
-            }
-
             return false;
         }
 
