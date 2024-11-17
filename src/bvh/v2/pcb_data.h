@@ -410,10 +410,10 @@ namespace bvh::v2 {
                 bbox_y_max_delta < -R)
                 return false;
             // 若圆弧为整圆，且bbox存在一个顶点在圆内部，直接返回true
-            if(arc_data.theta_1 - arc_data.theta_0 == 2*M_PI && (
-                bbox.min[0]*bbox.min[0] + bbox.min[1]*bbox.min[1] < R*R || bbox.min[0]*bbox.min[0] + bbox.max[1]*bbox.max[1] < R*R ||
-                bbox.max[0]*bbox.max[0] + bbox.min[1]*bbox.min[1] < R*R || bbox.max[0]*bbox.max[0] + bbox.max[1]*bbox.max[1] < R*R))
-                return true;
+            if(arc_data.theta_1 - arc_data.theta_0 == 2*M_PI)
+                if (bbox.min[0]*bbox.min[0] + bbox.min[1]*bbox.min[1] < R*R || bbox.min[0]*bbox.min[0] + bbox.max[1]*bbox.max[1] < R*R ||
+                    bbox.max[0]*bbox.max[0] + bbox.min[1]*bbox.min[1] < R*R || bbox.max[0]*bbox.max[0] + bbox.max[1]*bbox.max[1] < R*R)
+                    return true;
             // 思路：先求bbox四条边所在直线与整个圆的交点(每条线2个，最多共8个)，存入thetas，再判断交点是否在包围盒及圆弧上
             //std::vector<T> thetas;
             T thetas[8];
