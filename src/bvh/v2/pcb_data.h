@@ -13,7 +13,6 @@
 #include <optional>
 #include <utility>
 #include <vector>
-#include <assert.h>
 
 
 namespace bvh::v2 {
@@ -406,14 +405,18 @@ namespace bvh::v2 {
             T bbox_y_min_delta = (bbox.min[1] - arc_data.center[1]);
             T bbox_y_max_delta = (bbox.max[1] - arc_data.center[1]);
             T R = arc_data.radius;
-            // 若和圆包围盒无交集则直接return
+            // 若bbox和圆的包围盒无交集则直接return
             if (bbox_x_min_delta > R || bbox_y_min_delta > R || bbox_x_max_delta < -R ||
                 bbox_y_max_delta < -R)
                 return false;
-
+            // 若圆弧为整圆，且bbox存在一个顶点在圆内部，直接返回true
+            if(arc_data.theta_1 - arc_data.theta_0 == 2*M_PI && (
+                bbox.min[0]*bbox.min[0] + bbox.min[1]*bbox.min[1] < R*R || bbox.min[0]*bbox.min[0] + bbox.max[1]*bbox.max[1] < R*R ||
+                bbox.max[0]*bbox.max[0] + bbox.min[1]*bbox.min[1] < R*R || bbox.max[0]*bbox.max[0] + bbox.max[1]*bbox.max[1] < R*R))
+                return true;
             // 思路：先求bbox四条边所在直线与整个圆的交点(每条线2个，最多共8个)，存入thetas，再判断交点是否在包围盒及圆弧上
             //std::vector<T> thetas;
-            T thetas[8];  // 比vector快
+            T thetas[8];
             int top = 0;  // thetas.size();
             T temp_theta;  // 避免多次调用acos降低速度
             T temp_coord;  // 避免多次调用sin/cos降低速度，若求的是直线x=C与圆交点，则该变量表示交点的y坐标，以判断交点是否在bbox上
