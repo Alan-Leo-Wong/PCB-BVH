@@ -418,7 +418,7 @@ namespace bvh::v2 {
             if (bbox_x_min_delta < -R && bbox_y_min_delta < -R && bbox_x_max_delta > R && bbox_y_max_delta > R)
                 return true;
             // 思路：先求bbox四条边所在直线与整个圆的交点，再判断交点是否在包围盒及圆弧上
-            bool has_arc_intersect = false;  // 圆弧上是否存在整圆与直线的交点，若这种交点存在，却没有点与bbox线段相交，则return false
+            bool has_arc_extend_intersect = false;  // 圆弧上是否存在与延长线的交点，若这种交点存在，圆弧却没有与bbox相交，则return false
             T temp_theta; // 暂存交点的弧度角，方便作对称
             T temp_coord; // 若求的是直线x=C与圆交点，则该变量表示交点的y坐标，以判断交点是否在bbox上
             // if (bbox_x_min_delta >= -R && bbox_x_min_delta <= R) {
@@ -427,17 +427,16 @@ namespace bvh::v2 {
                 temp_coord = arc_data.center[1] + arc_data.radius * std::sin(temp_theta);
                 // 第一个交点，若该交点在bbox左侧边所在线段(而非延长线)上
                 if (bbox.min[1] <= temp_coord && temp_coord <= bbox.max[1]) {
-                    if (is_onArc(temp_theta))
-                        return true;
+                    if (is_onArc(temp_theta)) return true;
                 }
-                else if (is_onArc(temp_theta))
-                    has_arc_intersect = true;
+                else if (is_onArc(temp_theta))  // 交点在延长线上
+                    has_arc_extend_intersect = true;
                 // 上一个交点在圆上关于x轴的对称点的y坐标
                 if (bbox.min[1] <= -temp_coord + 2 * arc_data.center[1] &&
                     -temp_coord + 2 * arc_data.center[1] <= bbox.max[1]) {
                     if (is_onArc(-temp_theta)) return true;
                 }
-                else if (is_onArc(-temp_theta)) has_arc_intersect = true;
+                else if (!has_arc_extend_intersect) if (is_onArc(-temp_theta)) has_arc_extend_intersect = true;
             }
             // if (bbox_x_max_delta >= -R && bbox_x_max_delta <= R) {
             if (bbox_x_max_delta <= R) { // bbox的右侧边
@@ -446,12 +445,12 @@ namespace bvh::v2 {
                 if (bbox.min[1] <= temp_coord && temp_coord <= bbox.max[1]) {
                     if (is_onArc(temp_theta)) return true;
                 }
-                else if (is_onArc(temp_theta)) has_arc_intersect = true;
+                else if (!has_arc_extend_intersect) if (is_onArc(temp_theta)) has_arc_extend_intersect = true;
                 if (bbox.min[1] <= -temp_coord + 2 * arc_data.center[1] &&
                     -temp_coord + 2 * arc_data.center[1] <= bbox.max[1]) {
                     if (is_onArc(-temp_theta)) return true;
                 }
-                else if (is_onArc(-temp_theta)) has_arc_intersect = true;
+                else if (!has_arc_extend_intersect) if (is_onArc(-temp_theta)) has_arc_extend_intersect = true;
             }
             // if (bbox_y_min_delta >= -R && bbox_y_min_delta <= R) {
             if (bbox_y_min_delta >= -R) { // bbox的下侧边
@@ -460,12 +459,12 @@ namespace bvh::v2 {
                 if (bbox.min[0] <= temp_coord && temp_coord <= bbox.max[0]) {
                     if (is_onArc(temp_theta)) return true;
                 }
-                else if (is_onArc(temp_theta)) has_arc_intersect = true;
+                else if (!has_arc_extend_intersect) if (is_onArc(temp_theta)) has_arc_extend_intersect = true;
                 if (bbox.min[0] <= -temp_coord + 2 * arc_data.center[0] &&
                     -temp_coord + 2 * arc_data.center[0] <= bbox.max[0]) {
                     if (is_onArc(M_PI - temp_theta)) return true;
                 }
-                else if (is_onArc(M_PI - temp_theta)) has_arc_intersect = true;
+                else if (!has_arc_extend_intersect) if (is_onArc(M_PI - temp_theta)) has_arc_extend_intersect = true;
             }
             // if (bbox_y_max_delta >= -R && bbox_y_max_delta <= R) {
             if (bbox_y_max_delta <= R) { // bbox的上侧边
@@ -474,14 +473,14 @@ namespace bvh::v2 {
                 if (bbox.min[0] <= temp_coord && temp_coord <= bbox.max[0]) {
                     if (is_onArc(temp_theta)) return true;
                 }
-                else if (is_onArc(temp_theta)) has_arc_intersect = true;
+                else if (!has_arc_extend_intersect) if (is_onArc(temp_theta)) has_arc_extend_intersect = true;
                 if (bbox.min[0] <= -temp_coord + 2 * arc_data.center[0] &&
                     -temp_coord + 2 * arc_data.center[0] <= bbox.max[0]) {
                     if (is_onArc(M_PI - temp_theta)) return true;
                 }
-                else if (is_onArc(M_PI - temp_theta)) has_arc_intersect = true;
+                else if (!has_arc_extend_intersect) if (is_onArc(M_PI - temp_theta)) has_arc_extend_intersect = true;
             }
-            if (has_arc_intersect) return false;
+            if (has_arc_extend_intersect) return false;
             return true;
         }
         //
