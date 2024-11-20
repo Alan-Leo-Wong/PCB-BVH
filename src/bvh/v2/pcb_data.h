@@ -39,7 +39,9 @@ namespace bvh::v2 {
          *
          * @return
          */
-        BVH_ALWAYS_INLINE std::pair<Point, Point> get_ed() const { return std::pair<Point, Point>{p0, p1}; }
+        BVH_ALWAYS_INLINE std::pair<Point, Point> get_ed() const {
+            return std::pair<Point, Point>{p0, p1};
+        }
 
         /**
          *
@@ -57,7 +59,8 @@ namespace bvh::v2 {
          *
          * @return
          */
-        virtual BVH_ALWAYS_INLINE std::pair<T, Point> get_closest_dis(const Point &q) const = 0;
+        virtual BVH_ALWAYS_INLINE std::pair<T, Point>
+        get_closest_dis(const Point &q) const = 0;
 
         /**
          * Check for intersection with a given box, which is used for collision
@@ -75,14 +78,20 @@ namespace bvh::v2 {
         /// Constructors
         PCBSeg() = default;
 
-        BVH_ALWAYS_INLINE PCBSeg(const Point &_p0, const Point &_p1) : PCBData<T, N>{_p0, _p1} {}
+        BVH_ALWAYS_INLINE PCBSeg(const Point &_p0, const Point &_p1)
+                : PCBData<T, N>{_p0, _p1} {}
 
         /// Override functions
-        BVH_ALWAYS_INLINE BBox<T, N> get_bbox() const override { return BBox<T, N>(this->p0).extend(this->p1); }
+        BVH_ALWAYS_INLINE BBox<T, N> get_bbox() const override {
+            return BBox<T, N>(this->p0).extend(this->p1);
+        }
 
-        BVH_ALWAYS_INLINE Point get_bbox_center() const override { return (this->p0 + this->p1) * static_cast<T>(0.5); }
+        BVH_ALWAYS_INLINE Point get_bbox_center() const override {
+            return (this->p0 + this->p1) * static_cast<T>(0.5);
+        }
 
-        BVH_ALWAYS_INLINE std::pair<T, Point> get_closest_dis(const Point &q) const override {
+        BVH_ALWAYS_INLINE std::pair<T, Point>
+        get_closest_dis(const Point &q) const override {
             Vec<T, 2> p01 = this->p1 - this->p0;
             Vec<T, 2> p0q = q - this->p0;
 
@@ -99,9 +108,10 @@ namespace bvh::v2 {
             }
 
             T b = c1 / c2;
-            Vec<T, 2> p_c = this->p0 + b * p01; // Projection of point onto the line segment
+            Vec<T, 2> p_c =
+                    this->p0 + b * p01; // Projection of point onto the line segment
             T dis = (T) dot(q - p_c, q - p_c); /// squared distance
-            return std::pair{dis, p_c}; // Distance to projection
+            return std::pair{dis, p_c};       // Distance to projection
         }
 
         BVH_ALWAYS_INLINE bool is_intersect(const BBox<T, N> &bbox) const override {
@@ -126,7 +136,7 @@ namespace bvh::v2 {
                 std::cout << "bbox_x_max_delta: " << bbox_x_max_delta << std::endl;*/
 
                 T p_x_delta = _p1[0] - _p0[0];
-                //                 std::cout << "p_x_delta: " << p_x_delta << std::endl;
+//                 std::cout << "p_x_delta: " << p_x_delta << std::endl;
                 if (p_x_delta != .0) {
                     min_t = bbox_x_min_delta / p_x_delta;
                     max_t = bbox_x_max_delta / p_x_delta;
@@ -134,8 +144,7 @@ namespace bvh::v2 {
                         std::swap(min_t, max_t);
                     /*std::cout << "min_t: " << min_t << std::endl;
                     std::cout << "max_t: " << max_t << std::endl;*/
-                    if (min_t > 1.0 || max_t < 0.0)
-                        return false;
+                    if (min_t > 1.0 || max_t < 0.0) return false;
                 }
             }
 
@@ -148,10 +157,12 @@ namespace bvh::v2 {
 
                 T p_y_delta = _p1[1] - _p0[1];
                 if (p_y_delta >= 0) {
-                    if (min_t * p_y_delta > bbox_y_max_delta || max_t * p_y_delta < bbox_y_min_delta)
+                    if (min_t * p_y_delta > bbox_y_max_delta ||
+                        max_t * p_y_delta < bbox_y_min_delta)
                         return false;
                 } else {
-                    if (min_t * p_y_delta < bbox_y_min_delta || max_t * p_y_delta > bbox_y_max_delta)
+                    if (min_t * p_y_delta < bbox_y_min_delta ||
+                        max_t * p_y_delta > bbox_y_max_delta)
                         return false;
                 }
             }
