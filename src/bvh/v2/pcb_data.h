@@ -181,8 +181,8 @@ namespace bvh::v2 {
         /// Constructors
         ArcData() = default;
 
-        ArcData(const Vec<T, N> &_center, T _radius, T _theta_0, T _theta_1) :
-            center(_center), radius(_radius), theta_0(_theta_0), theta_1(_theta_1) {
+        ArcData(const Vec<T, N> &_center, T _radius, T _theta_0, T _theta_1)
+                : center(_center), radius(_radius), theta_0(_theta_0), theta_1(_theta_1) {
             delta_theta = theta_1 - theta_0;
         }
     };
@@ -195,18 +195,22 @@ namespace bvh::v2 {
 
         /// data
         ArcData<T, N> arc_data;
-        static constexpr std::array<T, 11> sp_angles = {-2 * M_PI, -1.5 * M_PI, -M_PI,     -0.5 * M_PI,
-                                                        0,         0.5 * M_PI,  M_PI,      1.5 * M_PI,
-                                                        2 * M_PI,  2.5 * M_PI,  3.0 * M_PI}; // to optimize
+        static constexpr std::array<T, 11> sp_angles = {
+                -2 * M_PI, -1.5 * M_PI, -M_PI, -0.5 * M_PI, 0, 0.5 * M_PI,
+                M_PI, 1.5 * M_PI, 2 * M_PI, 2.5 * M_PI, 3.0 * M_PI}; // to optimize
 
-        static constexpr std::array<T, 11> cos_sp_angles = {1, 0, -1, 0, 1, 0, -1, 0, 1, 0, -1}; // to optimize
+        static constexpr std::array<T, 11> cos_sp_angles = {
+                1, 0, -1, 0, 1, 0, -1, 0, 1, 0, -1}; // to optimize
 
-        static constexpr std::array<T, 11> sin_sp_angles = {0, 1, 0, -1, 0, 1, 0, -1, 0, 1, 0}; // to optimize
+        static constexpr std::array<T, 11> sin_sp_angles = {
+                0, 1, 0, -1, 0, 1, 0, -1, 0, 1, 0}; // to optimize
 
         /// Constructors
         PCBArc() = default;
 
-        BVH_ALWAYS_INLINE PCBArc(const Point &center, const Point &_p0, const Point &_p1) : PCBData<T, N>{_p0, _p1} {
+        BVH_ALWAYS_INLINE PCBArc(const Point &center, const Point &_p0,
+                                 const Point &_p1)
+                : PCBData<T, N>{_p0, _p1} {
             T radius = std::sqrt(dot(center - _p0, center - _p0));
 
             T theta_0 = std::atan2(_p0[1] - center[1], _p0[0] - center[0]);
@@ -227,8 +231,9 @@ namespace bvh::v2 {
                 if (angle > arc_data.theta_1)
                     break;
                 if (arc_data.theta_0 <= angle && angle <= arc_data.theta_1) {
-                    Point point = {(T) (arc_data.center[0] + arc_data.radius * std::cos(angle)),
-                                   (T) (arc_data.center[1] + arc_data.radius * std::sin(angle))};
+                    Point point = {
+                            (T) (arc_data.center[0] + arc_data.radius * std::cos(angle)),
+                            (T) (arc_data.center[1] + arc_data.radius * std::sin(angle))};
                     bbox.extend(point);
                 }
             }
@@ -236,9 +241,12 @@ namespace bvh::v2 {
             return bbox;
         }
 
-        BVH_ALWAYS_INLINE Point get_bbox_center() const override { return (this->p0 + this->p1) * static_cast<T>(0.5); }
+        BVH_ALWAYS_INLINE Point get_bbox_center() const override {
+            return (this->p0 + this->p1) * static_cast<T>(0.5);
+        }
 
-        BVH_ALWAYS_INLINE std::pair<T, Point> get_closest_dis(const Point &q) const override {
+        BVH_ALWAYS_INLINE std::pair<T, Point>
+        get_closest_dis(const Point &q) const override {
             Vec<T, 2> c_q = q - arc_data.center;
             T q_angle = std::atan2(c_q[1], c_q[0]);
 
@@ -250,13 +258,16 @@ namespace bvh::v2 {
             std::cout << "=============\n";
             system("pause");*/
 
-            bool is_in_range_1 = (q_angle >= arc_data.theta_0 && q_angle <= arc_data.theta_1);
-            bool is_in_range_2 = (q_angle + 2 * M_PI >= arc_data.theta_0 && q_angle + 2 * M_PI <= arc_data.theta_1);
+            bool is_in_range_1 =
+                    (q_angle >= arc_data.theta_0 && q_angle <= arc_data.theta_1);
+            bool is_in_range_2 = (q_angle + 2 * M_PI >= arc_data.theta_0 &&
+                                  q_angle + 2 * M_PI <= arc_data.theta_1);
             if (is_in_range_1 || is_in_range_2) {
                 Point closest;
                 T dis_to_c = length(c_q);
                 /// squared distance
-                T dis_to_arc = (dis_to_c - arc_data.radius) * (dis_to_c - arc_data.radius);
+                T dis_to_arc =
+                        (dis_to_c - arc_data.radius) * (dis_to_c - arc_data.radius);
                 /*std::cout << "q: " << q[0] << ", " << q[1] << std::endl;
                 std::cout << "center: " << arc_data.center[0] << ", " <<
                 arc_data.center[1] << std::endl; std::cout << "dis_to_c: " << dis_to_c <<
@@ -280,26 +291,25 @@ namespace bvh::v2 {
             }
         }
 
-        BVH_ALWAYS_INLINE bool check_cover(double bbox_x_min_theta, double bbox_x_max_theta, double bbox_y_min_delta,
+        BVH_ALWAYS_INLINE bool check_cover(double bbox_x_min_theta,
+                                           double bbox_x_max_theta,
+                                           double bbox_y_min_delta,
                                            double bbox_y_max_delta) const {
-            T valid_min_theta = std::max(bbox_x_min_theta, (double) arc_data.theta_0);
-            T valid_max_theta = std::min(bbox_x_max_theta, (double) arc_data.theta_1);
+            T valid_min_theta = std::max(bbox_x_min_theta, (double)arc_data.theta_0);
+            T valid_max_theta = std::min(bbox_x_max_theta, (double)arc_data.theta_1);
             /*std::cout << "==========\nvalid_x_min_theta = " << valid_min_theta / M_PI
                                                                * 180.0 << std::endl;
             std::cout << "valid_x_max_theta = " << valid_max_theta
                                                    / M_PI * 180.0 << std::endl;*/
-            if (valid_min_theta > bbox_x_max_theta || valid_max_theta < bbox_x_min_theta)
-                return false; // 没有任何区间重叠
+            if (valid_min_theta > bbox_x_max_theta || valid_max_theta < bbox_x_min_theta) return false; // 没有任何区间重叠
 
             T valid_y_min_delta, valid_y_max_delta;
             valid_y_min_delta = std::min(std::sin(valid_min_theta), std::sin(valid_max_theta));
             valid_y_max_delta = std::max(std::sin(valid_min_theta), std::sin(valid_max_theta));
             for (int i = 0; i < 11; ++i) {
                 T angle = sp_angles[i];
-                if (angle <= valid_min_theta)
-                    continue;
-                if (angle >= valid_max_theta)
-                    break;
+                if (angle <= valid_min_theta) continue;
+                if (angle >= valid_max_theta) break;
 
                 valid_y_min_delta = std::min(valid_y_min_delta, sin_sp_angles[i]);
                 valid_y_max_delta = std::max(valid_y_max_delta, sin_sp_angles[i]);
@@ -311,75 +321,76 @@ namespace bvh::v2 {
             return true;
         }
 
-        //           BVH_ALWAYS_INLINE bool is_intersect(const BBox<T, N> &bbox) const override {
-        //               T bbox_x_min_delta = (bbox.min[0] - arc_data.center[0]);
-        //               T bbox_x_max_delta = (bbox.max[0] - arc_data.center[0]);
-        //
-        //               T bbox_y_min_delta = (bbox.min[1] - arc_data.center[1]);
-        //               T bbox_y_max_delta = (bbox.max[1] - arc_data.center[1]);
-        //               /*std::cout << "center: " << arc_data.center[0] << ", " <<
-        //                         arc_data.center[1] << std::endl;
-        //
-        //               std::cout << "p1 = (" << this->p0[0] << ", " << this->p0[1] << ")" <<
-        //                         std::endl;
-        //               std::cout << "p2 = (" << this->p1[0] << ", " << this->p1[1] <<
-        //                         ")" << std::endl;
-        //               std::cout << "bbox_x_min_delta = " << bbox_x_min_delta <<
-        //                         std::endl;
-        //               std::cout << "bbox_x_max_delta = " << bbox_x_max_delta <<
-        //                         std::endl;
-        //
-        //               std::cout << "arc_data.theta_0 = " << arc_data.theta_0 / M_PI * 180.0 <<
-        //                         std::endl;
-        //               std::cout << "arc_data.theta_1 = " << arc_data.theta_1 / M_PI *
-        //                                                     180.0 << std::endl;
-        //               std::cout << "R = " << arc_data.radius << std::endl;*/
-        //
-        //               T R = arc_data.radius;
-        //               if (bbox_x_min_delta > R || bbox_y_min_delta > R || bbox_x_max_delta < -R ||
-        //                   bbox_y_max_delta < -R)
-        //                   return false;
-        //
-        //               T bbox_x_min_theta[4], bbox_x_max_theta[4];
-        //               if (bbox_x_min_delta >= -R && bbox_x_min_delta <= R) {
-        //                   bbox_x_min_theta[0] = std::acos(bbox_x_min_delta / R); // [0, pi]
-        //                   bbox_x_min_theta[1] = -bbox_x_min_theta[0];            // [-pi, 0]
-        //                   bbox_x_min_theta[2] = 2 * M_PI - bbox_x_min_theta[0];  // [pi, 2 * pi]
-        //                   bbox_x_min_theta[3] = 2 * M_PI + bbox_x_min_theta[0];  // [2 * pi, 3 * pi]
-        //               } else {
-        //                   bbox_x_min_theta[0] = std::min((double)arc_data.theta_0, .0);
-        //                   bbox_x_min_theta[1] = std::min((double)arc_data.theta_0, -M_PI);
-        //                   bbox_x_min_theta[2] = std::min((double)arc_data.theta_0, M_PI);
-        //                   bbox_x_min_theta[3] = std::min((double)arc_data.theta_0, 2 * M_PI);
-        //               }
-        //               if (bbox_x_max_delta >= -R && bbox_x_max_delta <= R) {
-        //                   bbox_x_max_theta[0] = std::acos(bbox_x_max_delta / R); // [0, pi]
-        //                   bbox_x_max_theta[1] = -bbox_x_max_theta[0];            // [-pi, 0]
-        //                   bbox_x_max_theta[2] = 2 * M_PI - bbox_x_max_theta[0];  // [pi, 2 * pi]
-        //                   bbox_x_max_theta[3] = 2 * M_PI + bbox_x_max_theta[0];  // [2 * pi, 3 * pi]
-        //               } else {
-        //                   bbox_x_max_theta[0] = std::max((double)arc_data.theta_1, M_PI);
-        //                   bbox_x_max_theta[1] = std::max((double)arc_data.theta_1, .0);
-        //                   bbox_x_max_theta[2] = std::max((double)arc_data.theta_1, 2 * M_PI);
-        //                   bbox_x_max_theta[3] = std::max((double)arc_data.theta_1, 3 * M_PI);
-        //               }
-        //
-        //               for (int i = 0; i < 4; ++i) {
-        //                   if (bbox_x_min_theta[i] > bbox_x_max_theta[i])
-        //                       std::swap(bbox_x_min_theta[i], bbox_x_max_theta[i]);
-        //                   /*std::cout << "==========\nbbox_x_min_theta = " << bbox_x_min_theta[i] /
-        //                                                                     M_PI * 180.0 << std::endl;
-        //                   std::cout << "bbox_x_max_theta = " <<
-        //                             bbox_x_max_theta[i] / M_PI * 180.0 << std::endl;
-        //                   system("pause");*/
-        //
-        //                   if (check_cover(bbox_x_min_theta[i], bbox_x_max_theta[i],
-        //                                   bbox_y_min_delta, bbox_y_max_delta))
-        //                       return true;
-        //               }
-        //
-        //               return false;
-        //           }
+//           BVH_ALWAYS_INLINE bool is_intersect(const BBox<T, N> &bbox) const override {
+//               T bbox_x_min_delta = (bbox.min[0] - arc_data.center[0]);
+//               T bbox_x_max_delta = (bbox.max[0] - arc_data.center[0]);
+//
+//               T bbox_y_min_delta = (bbox.min[1] - arc_data.center[1]);
+//               T bbox_y_max_delta = (bbox.max[1] - arc_data.center[1]);
+//               /*std::cout << "center: " << arc_data.center[0] << ", " <<
+//                         arc_data.center[1] << std::endl;
+//
+//               std::cout << "p1 = (" << this->p0[0] << ", " << this->p0[1] << ")" <<
+//                         std::endl;
+//               std::cout << "p2 = (" << this->p1[0] << ", " << this->p1[1] <<
+//                         ")" << std::endl;
+//               std::cout << "bbox_x_min_delta = " << bbox_x_min_delta <<
+//                         std::endl;
+//               std::cout << "bbox_x_max_delta = " << bbox_x_max_delta <<
+//                         std::endl;
+//
+//               std::cout << "arc_data.theta_0 = " << arc_data.theta_0 / M_PI * 180.0 <<
+//                         std::endl;
+//               std::cout << "arc_data.theta_1 = " << arc_data.theta_1 / M_PI *
+//                                                     180.0 << std::endl;
+//               std::cout << "R = " << arc_data.radius << std::endl;*/
+//
+//               T R = arc_data.radius;
+//               if (bbox_x_min_delta > R || bbox_y_min_delta > R || bbox_x_max_delta < -R ||
+//                   bbox_y_max_delta < -R)
+//                   return false;
+//
+//               T bbox_x_min_theta[4], bbox_x_max_theta[4];
+//               if (bbox_x_min_delta >= -R && bbox_x_min_delta <= R) {
+//                   bbox_x_min_theta[0] = std::acos(bbox_x_min_delta / R); // [0, pi]
+//                   bbox_x_min_theta[1] = -bbox_x_min_theta[0];            // [-pi, 0]
+//                   bbox_x_min_theta[2] = 2 * M_PI - bbox_x_min_theta[0];  // [pi, 2 * pi]
+//                   bbox_x_min_theta[3] = 2 * M_PI + bbox_x_min_theta[0];  // [2 * pi, 3 * pi]
+//               } else {
+//                   bbox_x_min_theta[0] = std::min((double)arc_data.theta_0, .0);
+//                   bbox_x_min_theta[1] = std::min((double)arc_data.theta_0, -M_PI);
+//                   bbox_x_min_theta[2] = std::min((double)arc_data.theta_0, M_PI);
+//                   bbox_x_min_theta[3] = std::min((double)arc_data.theta_0, 2 * M_PI);
+//               }
+//               if (bbox_x_max_delta >= -R && bbox_x_max_delta <= R) {
+//                   bbox_x_max_theta[0] = std::acos(bbox_x_max_delta / R); // [0, pi]
+//                   bbox_x_max_theta[1] = -bbox_x_max_theta[0];            // [-pi, 0]
+//                   bbox_x_max_theta[2] = 2 * M_PI - bbox_x_max_theta[0];  // [pi, 2 * pi]
+//                   bbox_x_max_theta[3] = 2 * M_PI + bbox_x_max_theta[0];  // [2 * pi, 3 * pi]
+//               } else {
+//                   bbox_x_max_theta[0] = std::max((double)arc_data.theta_1, M_PI);
+//                   bbox_x_max_theta[1] = std::max((double)arc_data.theta_1, .0);
+//                   bbox_x_max_theta[2] = std::max((double)arc_data.theta_1, 2 * M_PI);
+//                   bbox_x_max_theta[3] = std::max((double)arc_data.theta_1, 3 * M_PI);
+//               }
+//
+//               for (int i = 0; i < 4; ++i) {
+//                   if (bbox_x_min_theta[i] > bbox_x_max_theta[i])
+//                       std::swap(bbox_x_min_theta[i], bbox_x_max_theta[i]);
+//                   /*std::cout << "==========\nbbox_x_min_theta = " << bbox_x_min_theta[i] /
+//                                                                     M_PI * 180.0 << std::endl;
+//                   std::cout << "bbox_x_max_theta = " <<
+//                             bbox_x_max_theta[i] / M_PI * 180.0 << std::endl;
+//                   system("pause");*/
+//
+//                   if (check_cover(bbox_x_min_theta[i], bbox_x_max_theta[i],
+//                                   bbox_y_min_delta, bbox_y_max_delta))
+//                       return true;
+//               }
+//
+//               return false;
+//           }
+
         BVH_ALWAYS_INLINE bool is_onArc(T theta) const {
             if ((theta >= arc_data.theta_0 && theta <= arc_data.theta_1) ||
                 (theta - 2 * M_PI >= arc_data.theta_0 && theta - 2 * M_PI <= arc_data.theta_1) ||
@@ -583,7 +594,8 @@ namespace bvh::v2 {
             int base_samples = 10;
             float growth_rate = 0.5f;
             float angle_scale = 0.5f;
-            int nb_pts = base_samples * std::exp(growth_rate * angle_scale * (arc_data.delta_theta));
+            int nb_pts = base_samples *
+                         std::exp(growth_rate * angle_scale * (arc_data.delta_theta));
             double theta_sep = arc_data.delta_theta / ((nb_pts + 1) * 1.0);
 
             sample_pts.emplace_back(this->p0);
@@ -616,8 +628,9 @@ namespace bvh::v2 {
                 if (angle >= arc_data.theta_1)
                     break;
 
-                Point point = {(T) (arc_data.center[0] + arc_data.radius * std::cos(angle)),
-                               (T) (arc_data.center[1] + arc_data.radius * std::sin(angle))};
+                Point point = {
+                        (T) (arc_data.center[0] + arc_data.radius * std::cos(angle)),
+                        (T) (arc_data.center[1] + arc_data.radius * std::sin(angle))};
                 T p_dot = dot(point, side_dir);
                 min_arc_proj = std::min(min_arc_proj, p_dot);
                 max_arc_proj = std::max(max_arc_proj, p_dot);
